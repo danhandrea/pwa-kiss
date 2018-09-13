@@ -37,7 +37,7 @@ viewHeader page maybeViewer =
     nav [ class "navbar navbar-light" ]
         [ div [ class "container" ]
             [ a [ class "navbar-brand", Route.href Route.Home ]
-                [ text "conduit" ]
+                [ text "pwa-kiss" ]
             , ul [ class "nav navbar-nav pull-xs-right" ] <|
                 navbarLink page Route.Home [ text "Home" ]
                     :: viewMenu page maybeViewer
@@ -49,7 +49,7 @@ viewMenu : Page -> Maybe Viewer -> List (Html msg)
 viewMenu page maybeViewer =
     let
         linkTo =
-            navbarLink page 
+            navbarLink page
     in
     case maybeViewer of
         Just viewer ->
@@ -60,11 +60,12 @@ viewMenu page maybeViewer =
                 avatar =
                     Viewer.avatar viewer
             in
-            [ linkTo Route.About [ i [] [], text "\u{00A0}About" ]
+            [ linkTo Route.About [ i [] [], text "About" ]
             ]
 
-        Nothing -> 
+        Nothing ->
             [ linkTo Route.About [ text "About" ]
+
             -- , linkTo Route.Register [ text "Sign up" ]
             ]
 
@@ -81,6 +82,7 @@ viewFooter =
                 ]
             ]
         ]
+
 
 navbarLink : Page -> Route -> List (Html msg) -> Html msg
 navbarLink page route linkContent =

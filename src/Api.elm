@@ -1,4 +1,4 @@
-port module Api exposing (..)
+module Api exposing (Cred, application, storeCredWith, username, viewerChanges)
 
 import Avatar exposing (Avatar)
 import Browser
@@ -6,6 +6,7 @@ import Browser.Navigation as Nav
 import Json.Decode as Decode exposing (Decoder, Value, decodeString, field, string)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
 import Json.Encode as Encode
+import Ports exposing (onStoreChange, storeCache)
 import Url exposing (Url)
 import Username exposing (Username)
 
@@ -82,9 +83,6 @@ decoderFromCred decoder =
 -- PERSISTANCE
 
 
-port onStoreChange : (Value -> msg) -> Sub msg
-
-
 viewerChanges : (Maybe viewer -> msg) -> Decoder (Cred -> viewer) -> Sub msg
 viewerChanges toMsg decoder =
     onStoreChange (\value -> toMsg (decodeFromChange decoder value))
@@ -114,6 +112,3 @@ storeCredWith (Cred uname token) avatar =
                 ]
     in
     storeCache (Just json)
-
-
-port storeCache : Maybe Value -> Cmd msg

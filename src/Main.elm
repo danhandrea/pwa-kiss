@@ -7,6 +7,7 @@ import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (src)
 import Json.Decode as Decode exposing (Value)
 import Page exposing (Page)
+import Page.About as About
 import Page.Blank as Blank
 import Page.Home as Home
 import Page.NotFound as NotFound
@@ -23,6 +24,7 @@ type Model
     = Redirect Session
     | NotFound Session
     | Home Session
+    | About Session
 
 
 init : Maybe Viewer -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -57,6 +59,9 @@ view model =
         Home _ ->
             viewPage Page.Home (\_ -> Ignored) Home.view
 
+        About _ ->
+            viewPage Page.About (\_ -> Ignored) About.view
+
 
 
 ---- UPDATE ----
@@ -82,6 +87,9 @@ toSession page =
         Home session ->
             session
 
+        About session ->
+            session
+
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo maybeRoute model =
@@ -97,7 +105,7 @@ changeRouteTo maybeRoute model =
             ( model, Route.replaceUrl (Session.navKey session) Route.Home )
 
         Just Route.Home ->
-            ( model, Route.replaceUrl (Session.navKey session) Route.Home )
+            ( model, Cmd.none )
 
         Just Route.About ->
             ( model, Route.replaceUrl (Session.navKey session) Route.About )
@@ -105,7 +113,41 @@ changeRouteTo maybeRoute model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case ( msg, model ) of
+        ( Ignored, _ ) ->
+            ( model, Cmd.none )
+
+        ( ClickedLink urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    case url.fragment of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just _ ->
+                            ( model
+                            , Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url)
+                            )
+
+                Browser.External href ->
+                    ( model
+                    , Nav.load href
+                    )
+
+        ( ChangedUrl url, _ ) ->
+            changeRouteTo (Route.fromUrl url) model
+
+        ( ChangedRoute route, _ ) ->
+            changeRouteTo route model
+
+        ( GotSession session, Redirect _ ) ->
+            ( Redirect session
+            , Route.replaceUrl (Session.navKey session) Route.Home
+            )
+
+        ( _, _ ) ->
+            -- Disregard messages that arrived for the wrong page.
+            ( model, Cmd.none )
 
 
 
@@ -122,6 +164,9 @@ subscriptions model =
             Session.changes GotSession (Session.navKey (toSession model))
 
         Home _ ->
+            Sub.none
+
+        About _ ->
             Sub.none
 
 
